@@ -69,6 +69,8 @@ r_energy <- map(data$`Energy Per Capita`, function(x) rnorm (10, x, 1))
     vector1[i] <- energy_char
  }
 
+vector <- as.numeric(vector)
+vector1 <- as.numeric(vector1)
 ```
 
 
@@ -88,17 +90,22 @@ perm_cor <- function(perms = 1000, x, y)
 
 
 core <- cor( data$`Energy Per Capita`, data$`Flood_cap`)
+r_core <- cor(vector,vector1)
 corellate <- perm_cor(perms = 100000, data$`Energy Per Capita`,  data$`Flood_cap`)
+
 
 
 ggplot() + aes(corellate)+ geom_histogram(binwidth=.01, colour="black", fill="white") + geom_vline(mapping =aes(xintercept=core), color = "red") + labs(x = "Correlation Tests")
 
 p_value <- sum(corellate < core)/100000
 percentile <- sum(corellate < core)/length(corellate) * 100
+
+r_p_value <- sum(corellate < r_core)/100000
+r_percentile <- sum(corellate < r_core)/length(corellate) * 100
 ```
+The null hypothesis is that there is no correlation between people affected by flooding and energy produced per person. The factor measured is the cor() between the two variables. 
 
 The real data value falls in the `r percentile` percentile of the data, and the p value of the real data is `r p_value` indication that the real data is a statistically significant correlation. This may not reveal any true relation between flooding and energy produced, but instead a confounding factor, wealth of a country, may play a larger role. The correlation is negative, richer countries experiencing less effects from flooding. This makes sense as richer countries, who produce more energy per person, would also have more resources to put towards flood prevention and flood response. 
-
 
 
 ## Emily Archambault
