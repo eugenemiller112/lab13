@@ -44,7 +44,8 @@ data <- full_join(data, gap_new, by = c("country", "Year")) %>%
   mutate(Flood_cap = `Flood Affected`/`pop`) %>% 
   filter(!is.na(Flood_cap))
 
-
+data %>% map(summary)
+#r_flood <- map(data$Flood_cap, 
 ```
 
 
