@@ -284,4 +284,49 @@ I reject the null hypothesis.
 
 This shows a completely opposite relationship than what I expected from the data. Sugar most likely doesn't decrease infant mortality, but that wealth is a confounding variable in this correlation. Wealthier populaitons can afford sugar as a luxury and better health care. 
 
+## Kaiyuan Fan
+
+# Question: Is the amount of CO2 emission per person in Canada correlated with coal consumption per person since 1965?
+
+```{r, warning=FALSE}
+library(tidyverse)
+personal_CO2 <- read_csv('co2_emissions_tonnes_per_person.csv')
+personal_coal <- read_csv('coal_consumption_per_cap.csv')
+
+Canada_Co2 <- personal_CO2 %>%
+  filter(country == "Canada") %>%
+  select("1965":"2014") %>% 
+  gather("1965":"2014", key = "year", value = "CO2 emission per person")
+
+Canada_coal <-personal_coal %>% 
+  filter(country == "Canada") %>% 
+  select("1965":"2014") %>%
+  gather("1965":"2014", key = "year", value = "coal consumption per person")
+
+```
+
+```{r}
+perm_cor <- function(perms = 1000, x, y)
+{
+  vec <- numeric(perms)
+  for (i in c(1:perms))
+  {
+    r_Y <- sample(y)
+    vec[i] <- cor(x, r_Y)
+  }
+  return(vec)
+}
+
+cor1 <- cor(Canada_Co2$`CO2 emission per person`,Canada_coal$`coal consumption per person`)
+
+
+co_coal_corr <- perm_cor(1000, Canada_Co2$`CO2 emission per person`, Canada_coal$`coal consumption per person`)
+
+
+ggplot() +
+  aes(co_coal_corr)+ 
+  geom_histogram(binwidth=.03, color="black", fill="white") + 
+  geom_vline(xintercept = cor1, color="#ff7b2e") + labs(x = "Correlation") +
+  labs(title = "Correlation between CO2 emission and Coal consumption in Canada from 1965 to 2014")
+```
 
