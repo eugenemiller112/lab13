@@ -44,6 +44,7 @@ data <- full_join(data, gap_new, by = c("country", "Year")) %>%
   mutate(Flood_cap = `Flood Affected`/`pop`) %>% 
   filter(!is.na(Flood_cap))
 
+
 ```
 
 
@@ -52,27 +53,12 @@ data <- full_join(data, gap_new, by = c("country", "Year")) %>%
 
 perm_cor <- function(perms = 1000, x, y)
 {
-  ## Variables ##
-  # perms: The number of permutations 
-  # x: Vector of Variable 1 - for computing correlation
-  # y: Vector of Variable 2 - for computing correlation
-  ###############
-
-  #Create zero vector
   vec <- numeric(perms)
-  
-  # Loop throught number of permutations
   for (i in c(1:perms))
   {
-    #Randomize y vector
     r_Y <- sample(y)
-    
-    #Computer correlation and store
     vec[i] <- cor(x, r_Y)
-    
   }
-  
-  # Return new updated vector
   return(vec)
 }
 
