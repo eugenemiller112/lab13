@@ -169,7 +169,7 @@ This map function calculated the mean of each column in my hydroco2 dataset, giv
 
 Question: Does average sugar intake affect infant mortality rate?
 
-The datasets that I am using are sugar per person per day and infant mortality rate per 1000 births. 
+The datasets that I am using are sugar per person per day and infant mortality rate per 1000 births. Infant mortality accounts for all children who died within one year of their birth. 
 The data came with columns of year names, so I just gathered those columns into a year column and inner joined the datasets together. 
 
 Null Hypothesis: There is 0 correlation between sugar and infant mortality.
