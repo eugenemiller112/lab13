@@ -178,9 +178,7 @@ Alternative Hypothesis: There is a positive correlation between sugar and infant
 The test statistics that I am using is correlation.
 
 Map Function:
-```{r}
-data_normalized <- map(data, function(x){(x-mean(x))-sd(x)})
-```
+map(data, function(x){(x-mean(x))-sd(x)})
 This map function normalizes the sugar and infant mortality data to make them more comparible. 
 
 ```{r}
