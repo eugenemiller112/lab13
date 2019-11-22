@@ -8,6 +8,9 @@ output: html_document
 ## Individual Sections
 
 ### Eugene Miller
+
+#Question: Is there a correlation between energy produced per person and chance that a person will be displaced by flooding? 
+
 ```{r, setup}
 library(tidyverse)
 library(gapminder)
