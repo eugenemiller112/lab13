@@ -139,7 +139,7 @@ The null hypothesis is that there is no correlation between CO2 emissions and hy
 
 I used a corellation test between the two variables as my test statistic.
 
-```{r, echo= false, message=false}
+```{r, echo = FALSE , message=FALSE}
 p_value_corr <- 1 - sum(co_hydro_corr < cortest)/1000
 corr_percentile <- sum(co_hydro_corr < cortest)/length(co_hydro_corr) *100
 ```
@@ -148,7 +148,7 @@ The real data summary statistic falls in the `r corr_percentile`th percentile. W
 
 # Map Function
 
-```{r, warning = false}
+```{r, warning = FALSE}
 map_dbl(hydroco2, mean)
 ```
 
