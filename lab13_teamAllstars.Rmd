@@ -173,15 +173,17 @@ The datasets that I am using are sugar per person per day and infant mortality r
 The data came with columns of year names, so I just gathered those columns into a year column and inner joined the datasets together. 
 
 Null Hypothesis: There is 0 correlation between sugar and infant mortality.
+
 Alternative Hypothesis: There is a positive correlation between sugar and infant mortality.
 
-The test statistics that I am using is correlation.
+The test statistic that I am using is correlation.
 
 Map Function:
 map(data, function(x){(x-mean(x))-sd(x)})
+
 This map function normalizes the sugar and infant mortality data to make them more comparible. 
 
-```{r}
+```{r, echo=FALSE, messages = FALSE, warning=FALSE}
 data_sugar <- read_csv("sugar_per_person_g_per_day.csv")
 data_infant_mortality <- read_csv("infant_mortality_rate_per_1000_births.csv")
 data_sugar1 <- data_sugar %>%
