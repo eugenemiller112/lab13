@@ -11,7 +11,7 @@ output: html_document
 
 #Question: Is there a correlation between energy produced per person and chance that a person will be displaced by flooding? 
 
-```{r, setup}
+```{r, message = F, warning = F, echo=F}
 library(tidyverse)
 library(gapminder)
 
@@ -75,7 +75,7 @@ vector1 <- as.numeric(vector1)
 
 
 
-```{r, message = F, echo = T, message = F, eval = T}
+```{r, message = F, warning = F, echo=F}
 
 perm_cor <- function(perms = 1000, x, y)
 {
@@ -88,12 +88,9 @@ perm_cor <- function(perms = 1000, x, y)
   return(vec)
 }
 
-
 core <- cor( data$`Energy Per Capita`, data$`Flood_cap`)
 r_core <- cor(vector,vector1)
 corellate <- perm_cor(perms = 100000, data$`Energy Per Capita`,  data$`Flood_cap`)
-
-
 
 ggplot() + aes(corellate)+ geom_histogram(binwidth=.01, colour="black", fill="white") + geom_vline(mapping =aes(xintercept=core), color = "red") + labs(x = "Correlation Tests")
 
