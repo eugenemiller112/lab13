@@ -45,7 +45,22 @@ data <- full_join(data, gap_new, by = c("country", "Year")) %>%
   filter(!is.na(Flood_cap))
 
 data %>% map(summary)
-#r_flood <- map(data$Flood_cap, 
+
+r_flood <- map(data$Flood_cap, function(x) rnorm(10, x, 1))
+r_energy <- map(data$`Energy Per Capita`, function(x) rnorm (10, x, 1))
+
+# r_test <- tibble(
+#  ~r_flood, ~r_energy,
+#  for (i in seq_along(r_flood)){
+#    flood_samp <- r_flood[[i]][[sample(1:10,1)]]
+#    energy_samp <- r_energy[[i]][[sample(1:10,1)]]
+#    flood_char <- as.character(flood_samp)
+#    energy_char <- as.character(energy_samp)
+#    comma = ",
+#    "
+#    paste(flood_char,energy_char,comma, sep = ",")
+#  }
+# )
 ```
 
 
