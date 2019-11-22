@@ -93,3 +93,63 @@ ggplot() + aes(corellate)+ geom_histogram(binwidth=.01, colour="black", fill="wh
 p_value <- sum(corellate < core)/100000
 p_value
 ```
+
+## Emily Archambault
+
+# Question: Is the annual amount of hydro power generated in the US correlated with annual CO2 emissions?
+
+```{r, echo=FALSE, messages = FALSE}
+library(tidyverse)
+
+hydro <- read_csv("hydro_power_generation_total.csv")
+CO2 <-  read_csv("yearly_co2_emissions_1000_tonnes.csv")
+
+ushydro <- hydro %>%
+  filter(country == "United States") %>%
+  select("1975":"2011") %>% 
+  gather("1975":"2011", key = "year", value = "hydro energy produced")
+
+usCO2 <- CO2 %>% 
+  filter(country == "United States") %>% 
+  select("1975":"2011") %>%
+  gather("1975":"2011", key = "year", value = "CO2 Emissions")
+
+hydroco2 <- ushydro%>%
+  left_join(usCO2, by = "year")
+
+perm_cor <- function(perms = 1000, x, y)
+{
+  vec <- numeric(perms)
+  for (i in c(1:perms))
+  {
+    r_Y <- sample(y)
+    vec[i] <- cor(x, r_Y)
+  }
+  return(vec)
+}
+
+co_hydro_corr <- perm_cor(1000, usCO2$`CO2 Emissions`, ushydro$`hydro energy produced`)
+cortest <- cor(usCO2$`CO2 Emissions`, ushydro$`hydro energy produced`)
+
+ggplot() + aes(co_hydro_corr)+ geom_histogram(binwidth=.07, colour="black", fill="white") + 
+  geom_vline(xintercept = cortest, color="red") + labs(x = "CO2 and Hydro Power Correlation")
+```
+
+The null hypothesis is that there is no correlation between CO2 emissions and hydro power generated (0), while the alternative hypothesis is that there is a correlation (H > or < 0).
+
+I used a corellation test between the two variables as my test statistic.
+
+```{r, echo= false, message=false}
+p_value_corr <- 1 - sum(co_hydro_corr < cortest)/1000
+corr_percentile <- sum(co_hydro_corr < cortest)/length(co_hydro_corr) *100
+```
+
+The real data summary statistic falls in the `r corr_percentile`th percentile. With this, and a p value of `r p_value_corr` , I'm concluding that there is not a significant correlation between the annual CO2 emissions and the annual hydro power generated in the US. I thought initally, as the amount of hydro power increased, there may be a noticeable decrease in the amount of CO2, giving a negative correlation, but it appears that there is not a significant correlation there.
+
+# Map Function
+
+```{r, warning = false}
+map_dbl(hydroco2, mean)
+```
+
+This map function calculated the mean of each column in my hydroco2 dataset, giving the mean of annual CO2 emissions from 1975-2011, and the mean of annual hydro power generated in the same time frame. It returned NA for the year column because it was not numeric or logical (and it doesn't make sense to find the mean year anyway.)
