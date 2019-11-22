@@ -94,8 +94,12 @@ corellate <- perm_cor(perms = 100000, data$`Energy Per Capita`,  data$`Flood_cap
 ggplot() + aes(corellate)+ geom_histogram(binwidth=.01, colour="black", fill="white") + geom_vline(mapping =aes(xintercept=core), color = "red") + labs(x = "Correlation Tests")
 
 p_value <- sum(corellate < core)/100000
-p_value
+percentile <- sum(corellate < core)/length(corellate) * 100
 ```
+
+The real data value falls in the `r percentile` percentile of the data, and the p value of the real data is `r p_value` indication that the real data is a statistically significant correlation. This may not reveal any true relation between flooding and energy produced, but instead a confounding factor, wealth of a country, may play a larger role. The correlation is negative, richer countries experiencing less effects from flooding. This makes sense as richer countries, who produce more energy per person, would also have more resources to put towards flood prevention and flood response. 
+
+
 
 ## Emily Archambault
 
