@@ -284,6 +284,53 @@ I reject the null hypothesis.
 
 This shows a completely opposite relationship than what I expected from the data. Sugar most likely doesn't decrease infant mortality, but that wealth is a confounding variable in this correlation. Wealthier populaitons can afford sugar as a luxury and better health care. 
 
+##Jingzhi Zhang
+Question: Is there a correlation between annual CO2 emissions and the amount of CO2 emission per person in China?
+
+The null hypothesis is that there is no correlation between annual CO2 emissions and the amount of CO2 emission per person in China; the alternative hypothesis is that there is a correlation between annual CO2 emissions and the amount of CO2 emission per person in China.
+
+I used a corellation test between the two variables as my test statistic.
+```{r, echo=FALSE, messages = FALSE, warning=FALSE}
+library(tidyverse)
+CO2 <-  read_csv("yearly_co2_emissions_1000_tonnes.csv")
+personal_CO2 <- read_csv('co2_emissions_tonnes_per_person.csv')
+
+chinaCO2 <- CO2 %>% 
+  filter(country == "China") %>% 
+  select("1902":"2014") %>%
+  gather("1902":"2014", key = "year", value = "CO2 Emissions")
+
+china_Co2 <- personal_CO2 %>%
+  filter(country == "China") %>%
+  select("1902":"2014") %>% 
+  gather("1902":"2014", key = "year", value = "CO2 emission per person")
+
+China_CO2 <- chinaCO2%>%
+  left_join(china_Co2, by = "year")
+
+perm_cor <- function(perms = 1000, x, y)
+{
+  vec <- numeric(perms)
+  for (i in c(1:perms))
+  {
+    r_Y <- sample(y)
+    vec[i] <- cor(x, r_Y)
+  }
+  return(vec)
+}
+
+chinaCo_chinaCOPerson_corr <- perm_cor(1000, chinaCO2$`CO2 Emissions`, china_Co2$`CO2 emission per person`)
+cortest <- cor(chinaCO2$`CO2 Emissions`, china_Co2$`CO2 emission per person`)
+ggplot() + aes(chinaCo_chinaCOPerson_corr)+ geom_histogram(binwidth=.07, colour="black", fill="white") + 
+  geom_vline(xintercept = cortest, color="red", linetype="dashed") + labs(x = "annual CO2 emissions and amount of CO2 emission per person Correlation")
+
+p_value_cor <- 1 - sum(chinaCo_chinaCOPerson_corr < cortest)/1000
+cor_percentile <- sum(chinaCo_chinaCOPerson_corr < cortest)/length(chinaCo_chinaCOPerson_corr) *100
+```
+
+map function : map_dbl(China_CO2, mean), this map function calculated the mean of annual CO2 emissions of China and the mean of the amount of CO2 emission per person in China from 1902-2014.
+The real data summary statistic falls in the `r cor_percentile`th percentile and with a p value of `r p_value_cor` , form the graph we can see the correlation between the annual CO2 emissions and the amount of CO2 emission per person in the China is not significant. I thought as the amout of CO2 emission per person of china goes up, the annual CO2 emissions of china goes up too , however I did not see any strong correlation there. Null hypothesis win. 
+
 ## Kaiyuan Fan
 
 # Question: Is the amount of CO2 emission per person in Canada correlated with coal consumption per person since 1965?
