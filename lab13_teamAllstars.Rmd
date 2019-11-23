@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "lab13"
 author: "allstars"
@@ -377,3 +378,338 @@ ggplot() +
   labs(title = "Correlation between CO2 emission and Coal consumption in Canada from 1965 to 2014")
 ```
 
+=======
+---
+title: "lab13"
+author: "allstars"
+date: "11/19/2019"
+output: html_document
+---
+```{r,setup,echo=F,warning=F,message=F}
+library(tidyverse)
+library(gapminder)
+```
+
+## Team Section
+
+Overall Question: Does average sugar intake affect infant mortality rate?
+
+The datasets that I am using are sugar per person per day and infant mortality rate per 1000 births. Infant mortality accounts for all children who died within one year of their birth. 
+The data came with columns of year names, so I just gathered those columns into a year column and inner joined the datasets together. 
+
+Null Hypothesis: There is 0 correlation between sugar and infant mortality.
+
+Alternative Hypothesis: There is a positive correlation between sugar and infant mortality.
+
+The test statistic that I am using is correlation.
+
+Map Function:
+map(data, function(x){(x-mean(x))-sd(x)})
+
+This map function normalizes the sugar and infant mortality data to make them more comparible. 
+
+```{r, echo=FALSE, messages = FALSE, warning=FALSE}
+data_sugar <- read_csv("sugar_per_person_g_per_day.csv")
+data_infant_mortality <- read_csv("infant_mortality_rate_per_1000_births.csv")
+data_sugar1 <- data_sugar %>%
+  gather(-country, key="year", value="sugar") %>%
+  filter(!is.na(sugar))
+data_infant_mortality1 <- data_infant_mortality %>%
+  gather(-country, key="year", value="infant_mortality") %>%
+  filter(!is.na(infant_mortality))
+data <- data_sugar1 %>%
+  inner_join(data_infant_mortality1, by=c("country", "year")) %>%
+  select(sugar, infant_mortality)
+data_normalized <- map(data, function(x){(x-mean(x))-sd(x)})
+cor_actual <- cor(data_normalized$sugar, data_normalized$infant_mortality)
+perm_test_cor <- function(data, n) {
+  cor_vec <- vector("double")
+  for(i in 1:n) {
+    perm_sugar <- sample(data_normalized$sugar)
+    perm_infant_mortality <- sample(data_normalized$infant_mortality)
+    cor_vec[i] <- cor(perm_sugar, perm_infant_mortality)
+  }
+  cor_vec
+}
+cor_perm <- perm_test_cor(data_normalized, 1000)
+ggplot() +
+  geom_histogram(aes(cor_perm), color="Black", fill="White", binwidth=.01) +
+  geom_vline(aes(xintercept=cor_actual, color="Real Correlation"), linetype="dashed") +
+  labs(title="Permutation Test for Correlation Between Sugar and Infant Mortality") +
+  xlab("Correlation") +
+  ylab("Number of Instances From Permutation Test") +
+  scale_color_discrete(name="Calculated Values")
+percentile <- sum(cor_perm<cor_actual)/length(cor_perm)
+percentile
+```
+
+The real data summary statistic falls in the 0th percentile of the permutation test data.
+
+I reject the null hypothesis.
+
+This shows a completely opposite relationship than what I expected from the data. Sugar most likely doesn't decrease infant mortality, but that wealth is a confounding variable in this correlation. Wealthier populaitons can afford sugar as a luxury and better health care. 
+
+
+## Individual Sections
+
+### Eugene Miller
+
+Question: Is there a correlation between energy produced per person and chance that a person will be displaced by flooding? 
+
+```{r, message = F, warning = F, echo=F}
+library(tidyverse)
+library(gapminder)
+
+energy_capita <- read_csv('energy_production_per_person.csv')
+flood_affected <- read_csv('flood_affected_annual_number.csv')
+
+a <- which(colnames(energy_capita)=="1960")
+b <- which(colnames(energy_capita)=="2010")
+
+energy_capita <- energy_capita %>% 
+  gather(a:b, key = "Year", value = "Energy Per Capita") %>%
+  filter(!is.na(`Energy Per Capita`))
+
+a <- which(colnames(flood_affected)=="1970")
+b <- which(colnames(flood_affected)=="2008")
+
+flood_affected <- flood_affected %>% 
+  gather(a:b, key = "Year", value = "Flood Affected") %>% 
+  filter(!is.na(`Flood Affected`))
+
+data <- full_join(flood_affected,energy_capita, by = c("country", "Year")) %>%
+  filter(!is.na(`Energy Per Capita`)) %>% 
+  filter(!is.na(`Flood Affected`))
+
+data$Year <- as.numeric(data$Year)
+
+gap_new <- gapminder %>% 
+  select(`country`, `year`, `pop`) %>%
+  rename("Year" = `year`)
+
+data <- full_join(data, gap_new, by = c("country", "Year")) %>%
+  filter(!is.na(pop)) %>% 
+  mutate(Flood_cap = `Flood Affected`/`pop`) %>% 
+  filter(!is.na(Flood_cap))
+
+r_flood <- map(data$Flood_cap, function(x) rnorm(10, x, 1))
+r_energy <- map(data$`Energy Per Capita`, function(x) rnorm (10, x, 1))
+
+ vector <- character(length(r_flood))
+ vector1 <- character(length(r_flood))
+ 
+ for (i in seq_along(r_flood)){
+    flood_samp <- r_flood[[i]][[sample(1:10,1)]]
+    energy_samp <- r_energy[[i]][[sample(1:10,1)]]
+    flood_char <- as.character(flood_samp)
+    energy_char <- as.character(energy_samp)
+    vector[i] <- flood_char
+    vector1[i] <- energy_char
+ }
+
+vector <- as.numeric(vector)
+vector1 <- as.numeric(vector1)
+```
+
+Map function: `map(data$Flood_cap, function(x) rnorm(10, x, 1))` and `map(data$``Energy Per Capita``, function(x) rnorm (10, x, 1))`, were used to determine whether random values within 1 sd would also show a correlation after permutation testing. Is the specific data relevant to the statistical significance?
+
+
+```{r, message = F, warning = F, echo=F}
+
+perm_cor <- function(perms = 1000, x, y)
+{
+  vec <- numeric(perms)
+  for (i in c(1:perms))
+  {
+    r_Y <- sample(y)
+    vec[i] <- cor(x, r_Y)
+  }
+  return(vec)
+}
+
+core <- cor( data$`Energy Per Capita`, data$`Flood_cap`)
+r_core <- cor(vector,vector1)
+corellate <- perm_cor(perms = 100000, data$`Energy Per Capita`,  data$`Flood_cap`)
+
+ggplot() + aes(corellate)+ geom_histogram(binwidth=.01, colour="black", fill="white") + geom_vline(mapping =aes(xintercept=core), color = "red") + labs(x = "Correlation Tests")
+
+p_value <- sum(corellate < core)/100000
+percentile <- sum(corellate < core)/length(corellate) * 100
+
+r_p_value <- sum(corellate < r_core)/100000
+r_percentile <- sum(corellate < r_core)/length(corellate) * 100
+```
+
+The null hypothesis is that there is no correlation between people affected by flooding and energy produced per person. The factor measured is the cor() between the two variables. 
+
+The real data value falls in the `r percentile` percentile of the data, and the p value of the real data is `r p_value` indication that the real data is a statistically significant correlation. The null hypothesis is rejected. Analysing the rnorm vectors centered at the real data, the p value was `r r_p_value` and the percentile was `r r_percentile` indicating that data within 1 sd of real data does not show the same correlation. 
+
+This may not reveal any true relation between flooding and energy produced, but instead a confounding factor, wealth of a country, may play a larger role. The correlation is negative, richer countries experiencing less effects from flooding. This makes sense as richer countries, who produce more energy per person, would also have more resources to put towards flood prevention and flood response. 
+
+
+## Emily Archambault
+
+# Question: Is the annual amount of hydro power generated in the US correlated with annual CO2 emissions?
+
+```{r, echo=FALSE, messages = FALSE}
+library(tidyverse)
+
+hydro <- read_csv("hydro_power_generation_total.csv")
+CO2 <-  read_csv("yearly_co2_emissions_1000_tonnes.csv")
+
+ushydro <- hydro %>%
+  filter(country == "United States") %>%
+  select("1975":"2011") %>% 
+  gather("1975":"2011", key = "year", value = "hydro energy produced")
+
+usCO2 <- CO2 %>% 
+  filter(country == "United States") %>% 
+  select("1975":"2011") %>%
+  gather("1975":"2011", key = "year", value = "CO2 Emissions")
+
+hydroco2 <- ushydro%>%
+  left_join(usCO2, by = "year")
+
+perm_cor <- function(perms = 1000, x, y)
+{
+  vec <- numeric(perms)
+  for (i in c(1:perms))
+  {
+    r_Y <- sample(y)
+    vec[i] <- cor(x, r_Y)
+  }
+  return(vec)
+}
+
+co_hydro_corr <- perm_cor(1000, usCO2$`CO2 Emissions`, ushydro$`hydro energy produced`)
+cortest <- cor(usCO2$`CO2 Emissions`, ushydro$`hydro energy produced`)
+
+ggplot() + aes(co_hydro_corr)+ geom_histogram(binwidth=.07, colour="black", fill="white") + 
+  geom_vline(xintercept = cortest, color="red") + labs(x = "CO2 and Hydro Power Correlation")
+```
+
+The null hypothesis is that there is no correlation between CO2 emissions and hydro power generated (0), while the alternative hypothesis is that there is a correlation (H > or < 0).
+
+I used a corellation test between the two variables as my test statistic.
+
+```{r, echo = FALSE , message=FALSE}
+p_value_corr <- 1 - sum(co_hydro_corr < cortest)/1000
+corr_percentile <- sum(co_hydro_corr < cortest)/length(co_hydro_corr) *100
+```
+
+The real data summary statistic falls in the `r corr_percentile`th percentile. With this, and a p value of `r p_value_corr` , I'm concluding that there is not a significant correlation between the annual CO2 emissions and the annual hydro power generated in the US. I thought initally, as the amount of hydro power increased, there may be a noticeable decrease in the amount of CO2, giving a negative correlation, but it appears that there is not a significant correlation there.
+
+# Map Function
+
+```{r, warning = FALSE}
+map_dbl(hydroco2, mean)
+```
+
+This map function calculated the mean of each column in my hydroco2 dataset, giving the mean of annual CO2 emissions from 1975-2011, and the mean of annual hydro power generated in the same time frame. It returned NA for the year column because it was not numeric or logical (and it doesn't make sense to find the mean year anyway.)
+
+## Johnny Tamanaha
+
+Question: Does average sugar intake affect infant mortality rate?
+
+The datasets that I am using are sugar per person per day and infant mortality rate per 1000 births. Infant mortality accounts for all children who died within one year of their birth. 
+The data came with columns of year names, so I just gathered those columns into a year column and inner joined the datasets together. 
+
+Null Hypothesis: There is 0 correlation between sugar and infant mortality.
+
+Alternative Hypothesis: There is a positive correlation between sugar and infant mortality.
+
+The test statistic that I am using is correlation.
+
+Map Function:
+map(data, function(x){(x-mean(x))-sd(x)})
+
+This map function normalizes the sugar and infant mortality data to make them more comparible. 
+
+```{r, echo=FALSE, messages = FALSE, warning=FALSE}
+data_sugar <- read_csv("sugar_per_person_g_per_day.csv")
+data_infant_mortality <- read_csv("infant_mortality_rate_per_1000_births.csv")
+data_sugar1 <- data_sugar %>%
+  gather(-country, key="year", value="sugar") %>%
+  filter(!is.na(sugar))
+data_infant_mortality1 <- data_infant_mortality %>%
+  gather(-country, key="year", value="infant_mortality") %>%
+  filter(!is.na(infant_mortality))
+data <- data_sugar1 %>%
+  inner_join(data_infant_mortality1, by=c("country", "year")) %>%
+  select(sugar, infant_mortality)
+data_normalized <- map(data, function(x){(x-mean(x))-sd(x)})
+cor_actual <- cor(data_normalized$sugar, data_normalized$infant_mortality)
+perm_test_cor <- function(data, n) {
+  cor_vec <- vector("double")
+  for(i in 1:n) {
+    perm_sugar <- sample(data_normalized$sugar)
+    perm_infant_mortality <- sample(data_normalized$infant_mortality)
+    cor_vec[i] <- cor(perm_sugar, perm_infant_mortality)
+  }
+  cor_vec
+}
+cor_perm <- perm_test_cor(data_normalized, 1000)
+ggplot() +
+  geom_histogram(aes(cor_perm), color="Black", fill="White", binwidth=.01) +
+  geom_vline(aes(xintercept=cor_actual, color="Real Correlation"), linetype="dashed") +
+  labs(title="Permutation Test for Correlation Between Sugar and Infant Mortality") +
+  xlab("Correlation") +
+  ylab("Number of Instances From Permutation Test") +
+  scale_color_discrete(name="Calculated Values")
+percentile <- sum(cor_perm<cor_actual)/length(cor_perm)
+percentile
+```
+
+The real data summary statistic falls in the 0th percentile of the permutation test data.
+
+I reject the null hypothesis.
+
+This shows a completely opposite relationship than what I expected from the data. Sugar most likely doesn't decrease infant mortality, but that wealth is a confounding variable in this correlation. Wealthier populaitons can afford sugar as a luxury and better health care. 
+
+## Kaiyuan Fan
+
+# Question: Is the amount of CO2 emission per person in Canada correlated with coal consumption per person since 1965?
+
+```{r, warning=FALSE}
+library(tidyverse)
+personal_CO2 <- read_csv('co2_emissions_tonnes_per_person.csv')
+personal_coal <- read_csv('coal_consumption_per_cap.csv')
+
+Canada_Co2 <- personal_CO2 %>%
+  filter(country == "Canada") %>%
+  select("1965":"2014") %>% 
+  gather("1965":"2014", key = "year", value = "CO2 emission per person")
+
+Canada_coal <-personal_coal %>% 
+  filter(country == "Canada") %>% 
+  select("1965":"2014") %>%
+  gather("1965":"2014", key = "year", value = "coal consumption per person")
+
+```
+
+```{r}
+perm_cor <- function(perms = 1000, x, y)
+{
+  vec <- numeric(perms)
+  for (i in c(1:perms))
+  {
+    r_Y <- sample(y)
+    vec[i] <- cor(x, r_Y)
+  }
+  return(vec)
+}
+
+cor1 <- cor(Canada_Co2$`CO2 emission per person`,Canada_coal$`coal consumption per person`)
+
+
+co_coal_corr <- perm_cor(1000, Canada_Co2$`CO2 emission per person`, Canada_coal$`coal consumption per person`)
+
+
+ggplot() +
+  aes(co_coal_corr)+ 
+  geom_histogram(binwidth=.03, color="black", fill="white") + 
+  geom_vline(xintercept = cor1, color="#ff7b2e") + labs(x = "Correlation") +
+  labs(title = "Correlation between CO2 emission and Coal consumption in Canada from 1965 to 2014")
+```
+
+>>>>>>> master
