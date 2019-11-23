@@ -4,6 +4,10 @@ author: "allstars"
 date: "11/19/2019"
 output: html_document
 ---
+```{r,setup,echo=F,warning=F,message=F}
+library(tidyverse)
+library(gapminder)
+```
 
 ## Team Section
 
@@ -69,7 +73,7 @@ This shows a completely opposite relationship than what I expected from the data
 
 ### Eugene Miller
 
-#Question: Is there a correlation between energy produced per person and chance that a person will be displaced by flooding? 
+Question: Is there a correlation between energy produced per person and chance that a person will be displaced by flooding? 
 
 ```{r, message = F, warning = F, echo=F}
 library(tidyverse)
@@ -107,15 +111,8 @@ data <- full_join(data, gap_new, by = c("country", "Year")) %>%
   mutate(Flood_cap = `Flood Affected`/`pop`) %>% 
   filter(!is.na(Flood_cap))
 
-data %>% map(summary)
-
 r_flood <- map(data$Flood_cap, function(x) rnorm(10, x, 1))
 r_energy <- map(data$`Energy Per Capita`, function(x) rnorm (10, x, 1))
-
- r_test <- tribble(
-  ~flood, ~energy,
-  #--|--|----
-)
 
  vector <- character(length(r_flood))
  vector1 <- character(length(r_flood))
@@ -133,6 +130,7 @@ vector <- as.numeric(vector)
 vector1 <- as.numeric(vector1)
 ```
 
+Map function: `map(data$Flood_cap, function(x) rnorm(10, x, 1))` and `map(data$``Energy Per Capita``, function(x) rnorm (10, x, 1))`, were used to determine whether random values within 1 sd would also show a correlation after permutation testing. Is the specific data relevant to the statistical significance?
 
 
 ```{r, message = F, warning = F, echo=F}
@@ -160,9 +158,12 @@ percentile <- sum(corellate < core)/length(corellate) * 100
 r_p_value <- sum(corellate < r_core)/100000
 r_percentile <- sum(corellate < r_core)/length(corellate) * 100
 ```
+
 The null hypothesis is that there is no correlation between people affected by flooding and energy produced per person. The factor measured is the cor() between the two variables. 
 
-The real data value falls in the `r percentile` percentile of the data, and the p value of the real data is `r p_value` indication that the real data is a statistically significant correlation. This may not reveal any true relation between flooding and energy produced, but instead a confounding factor, wealth of a country, may play a larger role. The correlation is negative, richer countries experiencing less effects from flooding. This makes sense as richer countries, who produce more energy per person, would also have more resources to put towards flood prevention and flood response. 
+The real data value falls in the `r percentile` percentile of the data, and the p value of the real data is `r p_value` indication that the real data is a statistically significant correlation. The null hypothesis is rejected. Analysing the rnorm vectors centered at the real data, the p value was `r r_p_value` and the percentile was `r r_percentile` indicating that data within 1 sd of real data does not show the same correlation. 
+
+This may not reveal any true relation between flooding and energy produced, but instead a confounding factor, wealth of a country, may play a larger role. The correlation is negative, richer countries experiencing less effects from flooding. This makes sense as richer countries, who produce more energy per person, would also have more resources to put towards flood prevention and flood response. 
 
 
 ## Emily Archambault
