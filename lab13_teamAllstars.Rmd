@@ -25,6 +25,7 @@ map(data, function(x){(x-mean(x))-sd(x)})
 This map function normalizes the sugar and infant mortality data to make them more comparible. 
 
 ```{r, echo=FALSE, messages = FALSE, warning=FALSE}
+
 data_sugar <- read_csv("sugar_per_person_g_per_day.csv")
 data_infant_mortality <- read_csv("infant_mortality_rate_per_1000_births.csv")
 data_sugar1 <- data_sugar %>%
@@ -717,6 +718,10 @@ The real data summary statistic falls in the `r cor_percentile`th percentile and
 
 # Question: Is the amount of CO2 emission per person in Canada correlated with coal consumption per person since 1965?
 
+Null Hypothesis: There is 0 correlation between CO2 emission and coal consumption.
+
+Alternative Hypothesis: There is a positive correlation between CO2 emission and coal consumption.
+
 ```{r, warning=FALSE}
 library(tidyverse)
 personal_CO2 <- read_csv('co2_emissions_tonnes_per_person.csv')
@@ -759,4 +764,16 @@ ggplot() +
   labs(title = "Correlation between CO2 emission and Coal consumption in Canada from 1965 to 2014")
 ```
 
->>>>>>> master
+I used a corellation test between CO2 emission and coal consumption as my test statistic.
+
+```{r}
+p_value <-  sum(co_coal_corr < cor1 )/1000
+correlation_percentile <- sum(co_coal_corr  < cor1)/length(co_coal_corr) *100
+```
+
+The real data summary statistic falls in the `r correlation_percentile`th percentile. With this, and a p value of `r p_value` , I'm concluding that there is not a significant correlation between the annual CO2 emissions per person and the annual coal consumption in the Canada.
+
+```{r}
+map_dbl(Canada_coal, mean)
+```
+This map function calculates the average annual CO2 emissions person in Canada since 1965.
